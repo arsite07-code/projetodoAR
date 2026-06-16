@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel ADM · A/R</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.47.0/dist/tabler-icons.min.css">
+<link rel="shortcut icon" href="{{ url_for('static', filename='img/captura-2026-04-24.png') }}" type="image/x-icon">
+<style>
+  :root{
+    --bg:#0a0a0a; --panel:#121212; --panel-2:#171717;
+    --line:#242424; --gold:#D4AF37; --gold-light:#FFD86B;
+    --text:#f5f5f5; --muted:#9a9a9a;
+    --ok-bg:#1a2a14; --ok-fg:#8FCB5B;
+    --warn-bg:#2a2412; --warn-fg:#E8C24B;
+    --err-bg:#2a1414; --err-fg:#E06868;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Poppins',sans-serif; background:var(--bg); color:var(--text);
+    min-height:100vh;
+  }
+
+  /* ---------- LOGIN ---------- */
+  #login-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    background:
+      radial-gradient(circle at 20% 20%, rgba(212,175,55,0.08), transparent 40%),
+      radial-gradient(circle at 80% 80%, rgba(212,175,55,0.06), transparent 40%),
+      var(--bg);
+  }
+  .login-card{
+    width:340px; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; padding:36px 32px; text-align:center;
+  }
+  .login-card h1{
+    font-weight:800; font-size:28px; letter-spacing:2px; color:var(--gold);
+    text-shadow:0 0 12px rgba(212,175,55,0.35);
+  }
+  .login-card p.sub{color:var(--muted); font-size:13px; margin-top:6px; margin-bottom:28px;}
+  .login-card input{
+    width:100%; padding:12px 14px; margin-bottom:12px; border-radius:8px;
+    border:1px solid var(--line); background:#0d0d0d; color:var(--text); font-size:14px;
+  }
+  .login-card input:focus{outline:none; border-color:var(--gold);}
+  .login-card button{
+    width:100%; padding:12px; margin-top:8px; border:none; border-radius:8px;
+    background:var(--gold); color:#000; font-weight:700; font-size:14px; cursor:pointer;
+    transition:.2s;
+  }
+  .login-card button:hover{background:var(--gold-light); box-shadow:0 0 14px rgba(212,175,55,.4);}
+  #login-err{color:var(--err-fg); font-size:13px; margin-top:12px; min-height:16px;}
+  .login-hint{margin-top:18px; font-size:11px; color:#555;}
+
+  /* ---------- LAYOUT ---------- */
+  #adm-panel{display:none; min-height:100vh;}
+  .shell{display:flex; min-height:100vh;}
+  .sidebar{
+    width:230px; background:var(--panel); border-right:1px solid var(--line);
+    display:flex; flex-direction:column; padding:24px 0; flex-shrink:0;
+  }
+  .brand{padding:0 24px 24px; border-bottom:1px solid var(--line); margin-bottom:16px;}
+  .brand h2{color:var(--gold); font-weight:800; letter-spacing:1px; font-size:20px;}
+  .brand span{display:block; font-size:11px; color:var(--muted); margin-top:2px;}
+  #nome-loja{color:var(--text);}
+
+  .nav-item{
+    display:flex; align-items:center; gap:10px; padding:11px 24px; color:var(--muted);
+    cursor:pointer; font-size:14px; border-left:3px solid transparent; transition:.15s;
+  }
+  .nav-item i{font-size:17px;}
+  .nav-item:hover{background:var(--panel-2); color:var(--text);}
+  .nav-item.active{color:var(--gold); border-left-color:var(--gold); background:var(--panel-2);}
+  .nav-spacer{flex:1;}
+  .nav-item.logout{color:var(--err-fg); margin-top:8px;}
+
+  .main{flex:1; padding:32px 40px; overflow-x:hidden;}
+  .section{display:none;}
+  .section.active{display:block;}
+
+  h1.page-title{font-size:24px; font-weight:700; margin-bottom:4px;}
+  p.page-sub{color:var(--muted); font-size:13px; margin-bottom:28px;}
+
+  /* ---------- DASHBOARD ---------- */
+  #stats-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(180px,1fr));
+    gap:16px; margin-bottom:32px;
+  }
+  .stat-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px;
+    padding:18px 20px;
+  }
+  .stat-label{font-size:12px; color:var(--muted); margin-bottom:8px;}
+  .stat-value{font-size:26px; font-weight:700; color:var(--gold);}
+
+  .panel-box{
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px;
+  }
+  .panel-box h3{font-size:15px; margin-bottom:14px; color:var(--text);}
+
+  /* ---------- LISTS ---------- */
+  .toolbar{display:flex; gap:10px; margin-bottom:18px; align-items:center; flex-wrap:wrap;}
+  .toolbar input[type="text"]{
+    flex:1; min-width:180px; padding:10px 14px; border-radius:8px;
+    border:1px solid var(--line); background:var(--panel); color:var(--text); font-size:13px;
+  }
+  .toolbar input[type="text"]:focus{outline:none; border-color:var(--gold);}
+  .btn-gold{
+    background:var(--gold); color:#000; border:none; padding:10px 18px;
+    border-radius:8px; font-weight:600; font-size:13px; cursor:pointer; transition:.2s;
+    white-space:nowrap;
+  }
+  .btn-gold:hover{background:var(--gold-light);}
+  .btn-outline{
+    background:transparent; color:var(--gold); border:1px solid var(--gold);
+    padding:10px 18px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .btn-outline:hover{background:rgba(212,175,55,0.1);}
+
+  .list-item{
+    display:flex; align-items:center; justify-content:space-between; gap:14px;
+    padding:14px 16px; border:1px solid var(--line); border-radius:10px; margin-bottom:10px;
+    background:var(--panel-2); flex-wrap:wrap;
+  }
+  .item-info{min-width:0; flex:1;}
+  .item-name{font-weight:600; font-size:14px;}
+  .item-sub{font-size:12px; color:var(--muted); margin-top:3px;}
+  .item-badges{display:flex; gap:8px; flex-wrap:wrap;}
+  .badge{
+    font-size:11px; padding:4px 10px; border-radius:20px; font-weight:600; white-space:nowrap;
+  }
+  .badge-cat{background:#1c1c2a; color:#9DA8E8;}
+  .badge-price{background:#1a2a14; color:var(--ok-fg);}
+  .badge-estoque-low{background:var(--err-bg); color:var(--err-fg);}
+  .item-actions{display:flex; gap:6px;}
+  .btn-icon{
+    width:34px; height:34px; border-radius:8px; border:1px solid var(--line);
+    background:transparent; color:var(--muted); cursor:pointer; display:flex;
+    align-items:center; justify-content:center; transition:.15s;
+  }
+  .btn-icon:hover{border-color:var(--gold); color:var(--gold);}
+  .btn-icon.del:hover{border-color:var(--err-fg); color:var(--err-fg);}
+
+  .empty{
+    text-align:center; padding:50px 20px; color:var(--muted);
+  }
+  .empty i{font-size:34px; color:var(--line); margin-bottom:10px; display:block;}
+
+  /* ---------- FORM ---------- */
+  #form-produto{
+    max-height:0; overflow:hidden; transition:max-height .3s ease; margin-bottom:0;
+  }
+  #form-produto.open{max-height:600px; margin-bottom:20px;}
+  .form-grid{
+    display:grid; grid-template-columns:repeat(auto-fit, minmax(200px,1fr)); gap:12px;
+    background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:20px;
+  }
+  .form-grid label{font-size:12px; color:var(--muted); display:block; margin-bottom:6px;}
+  .form-grid input, .form-grid select, .form-grid textarea{
+    width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    background:#0d0d0d; color:var(--text); font-size:13px; font-family:inherit;
+  }
+  .form-grid input:focus, .form-grid select:focus, .form-grid textarea:focus{
+    outline:none; border-color:var(--gold);
+  }
+  .form-full{grid-column:1/-1;}
+  .form-actions{grid-column:1/-1; display:flex; gap:10px; justify-content:flex-end;}
+
+  /* ---------- CANDIDATOS ---------- */
+  .cand-item{
+    background:var(--panel-2); border:1px solid var(--line); border-radius:10px;
+    padding:14px 16px; margin-bottom:10px;
+  }
+  .cand-name{font-weight:600; font-size:14px; margin-bottom:6px;}
+  .cand-details{display:flex; gap:18px; flex-wrap:wrap;}
+  .cand-detail{font-size:12px; color:var(--muted); display:flex; align-items:center; gap:5px;}
+
+  /* ---------- CONFIG ---------- */
+  .config-form{max-width:420px; display:flex; flex-direction:column; gap:14px;}
+  .config-form label{font-size:12px; color:var(--muted);}
+  .config-form input{
+    padding:10px 12px; border-radius:8px; border:1px solid var(--line);
+    background:#0d0d0d; color:var(--text); font-size:13px;
+  }
+  .config-form input:focus{outline:none; border-color:var(--gold);}
+
+  /* ---------- TOAST ---------- */
+  #toast{
+    position:fixed; bottom:24px; right:24px; background:#1A1916; color:#fff;
+    padding:13px 20px; border-radius:10px; font-size:13px; opacity:0; pointer-events:none;
+    transform:translateY(10px); transition:.25s; z-index:999; box-shadow:0 6px 20px rgba(0,0,0,.4);
+  }
+  #toast.show{opacity:1; transform:translateY(0);}
+
+  @media (max-width:760px){
+    .shell{flex-direction:column;}
+    .sidebar{width:100%; flex-direction:row; overflow-x:auto; padding:12px;}
+    .brand{display:none;}
+    .nav-item{padding:8px 14px; border-left:none; border-bottom:3px solid transparent; white-space:nowrap;}
+    .nav-item.active{border-left:none; border-bottom-color:var(--gold);}
+    .nav-spacer{display:none;}
+    .main{padding:20px;}
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>A/R</h1>
+    <p class="sub">Painel administrativo</p>
+    <input type="text" id="user-in" placeholder="Usuário" autocomplete="username">
+    <input type="password" id="pass-in" placeholder="Senha" autocomplete="current-password">
+    <button onclick="fazerLogin()">Entrar</button>
+    <div id="login-err"></div>
+    <div class="login-hint">Padrão: admin / 1234</div>
+  </div>
+</div>
+
+<!-- ===== PAINEL ===== -->
+<div id="adm-panel">
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <h2>A/R</h2>
+        <span id="nome-loja">Painel ADM</span>
+      </div>
+
+      <div class="nav-item active" onclick="mudarAba('dashboard', this)">
+        <i class="ti ti-layout-dashboard"></i> Dashboard
+      </div>
+      <div class="nav-item" onclick="mudarAba('produtos', this)">
+        <i class="ti ti-shirt"></i> Produtos
+      </div>
+      <div class="nav-item" onclick="mudarAba('compras', this)">
+        <i class="ti ti-shopping-bag"></i> Compras
+      </div>
+      <div class="nav-item" onclick="mudarAba('candidatos', this)">
+        <i class="ti ti-users"></i> Candidatos
+      </div>
+      <div class="nav-item" onclick="mudarAba('config', this)">
+        <i class="ti ti-settings"></i> Configurações
+      </div>
+
+      <div class="nav-spacer"></div>
+      <div class="nav-item logout" onclick="sair()">
+        <i class="ti ti-logout"></i> Sair
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <!-- DASHBOARD -->
+      <section class="section active" id="sec-dashboard">
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-sub" id="data-hoje"></p>
+        <div id="stats-grid"></div>
+        <div class="panel-box">
+          <h3>Estoque baixo</h3>
+          <div id="lista-estoque-baixo"></div>
+        </div>
+      </section>
+
+      <!-- PRODUTOS -->
+      <section class="section" id="sec-produtos">
+        <h1 class="page-title">Produtos</h1>
+        <p class="page-sub">Cadastre, edite e remova produtos da loja.</p>
+
+        <div class="toolbar">
+          <input type="text" placeholder="Buscar produto..." oninput="filtrarProdutos(this.value)">
+          <button class="btn-gold" onclick="toggleForm('form-produto')">+ Novo Produto</button>
+        </div>
+
+        <div id="form-produto">
+          <div class="form-grid">
+            <div>
+              <label>Nome</label>
+              <input type="text" id="p-nome" placeholder="Ex: Oversized Black">
+            </div>
+            <div>
+              <label>Categoria</label>
+              <select id="p-cat">
+                <option value="Camiseta">Camiseta</option>
+                <option value="Moletom">Moletom</option>
+                <option value="Acessório">Acessório</option>
+                <option value="Outro">Outro</option>
+              </select>
+            </div>
+            <div>
+              <label>Preço (R$)</label>
+              <input type="number" step="0.01" id="p-preco" placeholder="99.90">
+            </div>
+            <div>
+              <label>Estoque</label>
+              <input type="number" id="p-estoque" placeholder="10">
+            </div>
+            <div>
+              <label>Estilo</label>
+              <input type="text" id="p-estilo" placeholder="Streetwear">
+            </div>
+            <div class="form-full">
+              <label>Descrição</label>
+              <textarea id="p-desc" rows="2" placeholder="Descrição do produto"></textarea>
+            </div>
+            <div class="form-actions">
+              <button class="btn-outline" onclick="cancelarForm()">Cancelar</button>
+              <button class="btn-gold" onclick="salvarProduto()">Salvar Produto</button>
+            </div>
+          </div>
+        </div>
+
+        <div id="lista-produtos"></div>
+      </section>
+
+      <!-- COMPRAS -->
+      <section class="section" id="sec-compras">
+        <h1 class="page-title">Compras</h1>
+        <p class="page-sub">Pedidos feitos pelos clientes no site.</p>
+
+        <div class="toolbar">
+          <input type="text" placeholder="Buscar por cliente ou produto..." oninput="filtrarCompras(this.value)">
+          <button class="btn-outline" onclick="exportarComprasCSV()">Exportar CSV</button>
+        </div>
+
+        <div id="lista-compras"></div>
+      </section>
+
+      <!-- CANDIDATOS -->
+      <section class="section" id="sec-candidatos">
+        <h1 class="page-title">Candidatos</h1>
+        <p class="page-sub">Inscrições recebidas pelo site.</p>
+
+        <div class="toolbar">
+          <input type="text" placeholder="Buscar por nome ou email..." oninput="filtrarCandidatos(this.value)">
+          <button class="btn-outline" onclick="exportarCSV()">Exportar CSV</button>
+        </div>
+
+        <div id="lista-candidatos"></div>
+      </section>
+
+      <!-- CONFIGURAÇÕES -->
+      <section class="section" id="sec-config">
+        <h1 class="page-title">Configurações</h1>
+        <p class="page-sub">Personalize o painel.</p>
+
+        <div class="config-form">
+          <div>
+            <label>Nome da loja</label>
+            <input type="text" id="cfg-nome" placeholder="A/R">
+          </div>
+          <div>
+            <label>Nova senha</label>
+            <input type="password" id="cfg-senha" placeholder="Deixe em branco para não alterar">
+          </div>
+          <div>
+            <label>Confirmar nova senha</label>
+            <input type="password" id="cfg-senha2">
+          </div>
+          <button class="btn-gold" onclick="salvarConfig()">Salvar Configurações</button>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script src="{{ url_for('static', filename='js/adm.js') }}"></script>
+</body>
+</html>
