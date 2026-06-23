@@ -192,7 +192,6 @@ section.especialidade .flex{
     border-radius: 20px;
     padding: 40px;
     transition: 0.4s;
-<<<<<<< HEAD
 
 
   /* NOVO: para o <a> se comportar como a div */
@@ -209,8 +208,6 @@ section.especialidade .flex{
 
 .especialidade .especialidade-box:hover h3{
     color: #D4AF37;
-=======
->>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 }
 
 .especialidade .especialidade-box:hover{
@@ -373,7 +370,6 @@ section.portfolio .flex{
     transform: scale(1.05);
     box-shadow: 0 0 15px #D4AF37;
 }
-<<<<<<< HEAD
 /* =============================== */
 /* IA MACHINE LEARNING - LOJA A/R */
 /* =============================== */
@@ -622,8 +618,6 @@ section.portfolio .flex{
         font-size: 18px;
     }
 }
-=======
->>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
 /* RESPONSIVO */
 @media (max-width: 768px){
