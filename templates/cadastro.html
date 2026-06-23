@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>A/R — Entrar / Criar conta</title>
+  <link rel="shortcut icon" href="../static/img/captura-2026-04-24.png" type="image/x-icon">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --gold: #D4AF37;
+      --gold-dim: #a88a20;
+      --gold-pale: #f0dc80;
+      --black: #000;
+      --surface: #0d0d0d;
+      --surface2: #1a1a1a;
+      --border: #2a2a2a;
+      --text: #f5f0e0;
+      --muted: #7a7060;
+      --radius: 10px;
+    }
+
+    body {
+      background: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      padding: 24px;
+    }
+
+    .wrap {
+      background: var(--black);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 0 0 1px #1a1a1a;
+    }
+
+    /* TABS */
+    .tabs { display: flex; border-bottom: 1px solid var(--border); }
+    .tab {
+      flex: 1; padding: 18px 0; background: none; border: none;
+      color: var(--muted); font-size: 14px; font-weight: 500;
+      letter-spacing: .08em; text-transform: uppercase;
+      cursor: pointer; transition: color .2s; position: relative;
+    }
+    .tab::after {
+      content: ''; position: absolute; bottom: -1px; left: 0; right: 0;
+      height: 2px; background: var(--gold);
+      transform: scaleX(0); transition: transform .25s;
+    }
+    .tab.active { color: var(--gold); }
+    .tab.active::after { transform: scaleX(1); }
+
+    /* PANELS */
+    .panel { flex: 1; padding: 36px 40px 32px; display: none; }
+    .panel.active { display: block; }
+
+    .wordmark { display: flex; align-items: center; gap: 10px; margin-bottom: 28px; }
+    .wordmark svg { width: 26px; height: 26px; }
+    .wordmark span { font-size: 19px; font-weight: 600; color: var(--gold); letter-spacing: .04em; }
+
+    .headline { font-size: 24px; font-weight: 600; color: var(--text); margin-bottom: 4px; line-height: 1.2; }
+    .sub { font-size: 13px; color: var(--muted); margin-bottom: 24px; }
+
+    .row { display: flex; gap: 12px; }
+    .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; flex: 1; }
+    .field label { font-size: 11px; color: var(--muted); letter-spacing: .06em; text-transform: uppercase; }
+    .field input {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 11px 14px;
+      color: var(--text); font-size: 14px; outline: none;
+      transition: border-color .2s; font-family: inherit; width: 100%;
+    }
+    .field input:focus { border-color: var(--gold); }
+    .field input::placeholder { color: #3a3830; }
+
+    .forgot {
+      display: block; text-align: right; font-size: 12px; color: var(--gold-dim);
+      margin-top: -8px; margin-bottom: 18px; cursor: pointer; text-decoration: none;
+      transition: color .2s;
+    }
+    .forgot:hover { color: var(--gold); }
+
+    .btn-primary {
+      width: 100%; padding: 13px; background: var(--gold); border: none;
+      border-radius: var(--radius); color: var(--black); font-size: 14px;
+      font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      cursor: pointer; transition: background .2s, transform .1s; margin-top: 4px;
+    }
+    .btn-primary:hover { background: var(--gold-pale); }
+    .btn-primary:active { transform: scale(.98); }
+
+    .divider { display: flex; align-items: center; gap: 12px; margin: 18px 0; }
+    .divider span { font-size: 12px; color: var(--muted); white-space: nowrap; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .btn-social {
+      width: 100%; padding: 11px; background: var(--surface2);
+      border: 1px solid var(--border); border-radius: var(--radius);
+      color: var(--text); font-size: 13px; font-weight: 500; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: border-color .2s, background .2s, color .2s;
+    }
+    .btn-social:hover { border-color: var(--gold); background: var(--surface); color: var(--gold); }
+
+    .agree {
+      display: flex; align-items: flex-start; gap: 10px;
+      margin: 14px 0 18px; font-size: 12px; color: var(--muted); line-height: 1.5;
+    }
+    .agree input[type=checkbox] { width: 16px; height: 16px; accent-color: var(--gold); flex-shrink: 0; margin-top: 1px; }
+    .agree a { color: var(--gold-dim); cursor: pointer; text-decoration: underline; transition: color .2s; }
+    .agree a:hover { color: var(--gold); }
+
+    .strength-bar { display: flex; gap: 4px; margin-top: 5px; }
+    .seg { flex: 1; height: 3px; border-radius: 2px; background: var(--border); transition: background .3s; }
+    .strength-label { font-size: 11px; color: var(--muted); margin-top: 3px; }
+
+    .err { font-size: 12px; color: #e24b4a; margin-top: 8px; display: none; }
+
+    /* DASHBOARD */
+    .dashboard { padding: 32px 40px; }
+    .dash-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 28px; }
+    .dash-greeting { font-size: 22px; font-weight: 600; color: var(--text); }
+    .dash-greeting span { color: var(--gold); }
+    .dash-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+    .avatar {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--surface2); border: 2px solid var(--gold);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 15px; font-weight: 600; color: var(--gold); letter-spacing: .02em;
+    }
+    .cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 24px; }
+    .card { background: var(--surface2); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .card-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+    .card-value { font-size: 22px; font-weight: 600; color: var(--gold); }
+    .card-unit { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .section-title { font-size: 13px; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px; }
+    .activity { display: flex; flex-direction: column; gap: 8px; }
+    .act-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius); }
+    .act-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--gold); flex-shrink: 0; }
+    .act-dot.dim { background: var(--border); }
+    .act-text { flex: 1; font-size: 13px; color: var(--text); }
+    .act-time { font-size: 12px; color: var(--muted); }
+    .btn-logout {
+      padding: 8px 16px; background: none; border: 1px solid var(--border);
+      border-radius: var(--radius); color: var(--muted); font-size: 12px;
+      cursor: pointer; transition: border-color .2s, color .2s; letter-spacing: .04em;
+    }
+    .btn-logout:hover { border-color: var(--gold); color: var(--gold); }
+
+    @media (max-width: 520px) {
+      body { padding: 12px; }
+      .panel { padding: 28px 20px 24px; }
+      .dashboard { padding: 24px 20px; }
+      .cards { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="wrap" id="app">
+
+  <!-- AUTH -->
+  <div id="view-auth">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('login')">Entrar</button>
+      <button class="tab" onclick="showTab('register')">Criar conta</button>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="panel-login" class="panel active">
+      <div class="wordmark">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="14,2 26,9 26,19 14,26 2,19 2,9" fill="none" stroke="#D4AF37" stroke-width="1.5"/>
+          <polygon points="14,6 22,11 22,17 14,22 6,17 6,11" fill="#D4AF37" opacity=".18"/>
+          <circle cx="14" cy="14" r="3" fill="#D4AF37"/>
+        </svg>
+        <span>A/R</span>
+      </div>
+      <div class="headline">Bem-vindo de volta</div>
+      <div class="sub">Acesse sua conta para continuar</div>
+
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="l-email" placeholder="seu@email.com">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="l-pass" placeholder="••••••••">
+      </div>
+      <a class="forgot" href="#">Esqueci minha senha</a>
+
+      <button class="btn-primary" onclick="doLogin()">Entrar</button>
+      <div class="err" id="l-err">E-mail ou senha incorretos.</div>
+
+      <div class="divider"><span>ou continue com</span></div>
+      <div class="row">
+        <button class="btn-social" onclick="doSocialLogin('Google')">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+            <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
+        <button class="btn-social gh-btn" onclick="doSocialLogin('GitHub')">
+          <svg class="gh-icon" width="18" height="18" viewBox="0 0 24 24">
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" fill="#f5f0e0"/>
+          </svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="panel-register" class="panel">
+      <div class="wordmark">
+        <svg viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <polygon points="14,2 26,9 26,19 14,26 2,19 2,9" fill="none" stroke="#D4AF37" stroke-width="1.5"/>
+          <polygon points="14,6 22,11 22,17 14,22 6,17 6,11" fill="#D4AF37" opacity=".18"/>
+          <circle cx="14" cy="14" r="3" fill="#D4AF37"/>
+        </svg>
+        <span>A/R</span>
+      </div>
+      <div class="headline">Crie sua conta</div>
+      <div class="sub">Comece agora, é gratuito</div>
+
+      <div class="row">
+        <div class="field"><label>Nome</label><input type="text" id="r-nome" placeholder="João"></div>
+        <div class="field"><label>Sobrenome</label><input type="text" id="r-sobre" placeholder="Silva"></div>
+      </div>
+      <div class="field">
+        <label>E-mail</label>
+        <input type="email" id="r-email" placeholder="seu@email.com">
+      </div>
+      <div class="field">
+        <label>Senha</label>
+        <input type="password" id="r-pass" placeholder="••••••••" oninput="calcStrength(this.value)">
+        <div class="strength-bar">
+          <div class="seg" id="s1"></div>
+          <div class="seg" id="s2"></div>
+          <div class="seg" id="s3"></div>
+          <div class="seg" id="s4"></div>
+        </div>
+        <div class="strength-label" id="slabel">Use 8+ caracteres, letras e números</div>
+      </div>
+
+      <div class="agree">
+        <input type="checkbox" id="terms">
+        <label for="terms">Li e aceito os <a href="#">termos de uso</a> e a <a href="#">política de privacidade</a></label>
+      </div>
+
+      <button class="btn-primary" onclick="doRegister()">Criar conta</button>
+      <div class="err" id="r-err"></div>
+
+      <div class="divider"><span>ou cadastre-se com</span></div>
+      <div class="row">
+        <button class="btn-social" onclick="doSocialLogin('Google')">
+          <svg width="18" height="18" viewBox="0 0 18 18">
+            <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+            <path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+            <path d="M3.964 10.71A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/>
+            <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+          </svg>
+          Google
+        </button>
+        <button class="btn-social gh-btn" onclick="doSocialLogin('GitHub')">
+          <svg class="gh-icon" width="18" height="18" viewBox="0 0 24 24">
+            <path d="M12 0C5.373 0 0 5.373 0 12c0 5.302 3.438 9.8 8.207 11.387.6.113.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23A11.509 11.509 0 0112 5.803c1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576C20.566 21.797 24 17.3 24 12c0-6.627-5.373-12-12-12z" fill="#f5f0e0"/>
+          </svg>
+          GitHub
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="view-dashboard" style="display:none">
+    <div class="dashboard">
+      <div class="dash-header">
+        <div>
+          <div class="dash-greeting">Olá, <span id="dash-name">—</span> 👋</div>
+          <div class="dash-sub">Sua conta está ativa e segura</div>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="avatar" id="dash-avatar">—</div>
+          <button class="btn-logout" onclick="doLogout()">Sair</button>
+        </div>
+      </div>
+
+      <div class="cards">
+        <div class="card">
+          <div class="card-label">Saldo</div>
+          <div class="card-value">R$ 0</div>
+          <div class="card-unit">disponível</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Transações</div>
+          <div class="card-value">0</div>
+          <div class="card-unit">este mês</div>
+        </div>
+        <div class="card">
+          <div class="card-label">Nível</div>
+          <div class="card-value" style="font-size:16px;padding-top:3px">Iniciante</div>
+          <div class="card-unit">0 / 1000 pts</div>
+        </div>
+      </div>
+
+      <div class="section-title">Atividade recente</div>
+      <div class="activity">
+        <div class="act-item">
+          <div class="act-dot"></div>
+          <div class="act-text">Conta criada com sucesso</div>
+          <div class="act-time">agora</div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot dim"></div>
+          <div class="act-text">Nenhuma transação ainda</div>
+          <div class="act-time">—</div>
+        </div>
+        <div class="act-item">
+          <div class="act-dot dim"></div>
+          <div class="act-text">Complete seu perfil para desbloquear recursos</div>
+          <div class="act-time">pendente</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  /* ============================================================
+     Login / Cadastro reais, conectados ao backend Flask (/api/*).
+     Tudo é gravado no SQLite de verdade — nada fica só na memória
+     do navegador. A sessão usa cookie do Flask, então ao recarregar
+     a página o usuário continua logado.
+     ============================================================ */
+  const API = '/api';
+
+  async function apiFetch(url, opcoes = {}) {
+    const res = await fetch(API + url, {
+      credentials: 'include', // envia/recebe o cookie de sessão
+      ...opcoes,
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const erro = new Error(json.erro || 'Erro na requisição');
+      erro.status = res.status;
+      throw erro;
+    }
+    return json;
+  }
+
+  function showTab(tab) {
+    document.querySelectorAll('.tab').forEach((t, i) => {
+      t.classList.toggle('active', (i === 0 && tab === 'login') || (i === 1 && tab === 'register'));
+    });
+    document.getElementById('panel-login').classList.toggle('active', tab === 'login');
+    document.getElementById('panel-register').classList.toggle('active', tab === 'register');
+  }
+
+  function calcStrength(v) {
+    const segs = [document.getElementById('s1'), document.getElementById('s2'), document.getElementById('s3'), document.getElementById('s4')];
+    const lbl = document.getElementById('slabel');
+    let score = 0;
+    if (v.length >= 8) score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    const lbls = ['', 'Fraca', 'Média', 'Forte', 'Muito forte'];
+    segs.forEach((s, i) => { s.style.background = i < score ? '#D4AF37' : '#2a2a2a'; });
+    lbl.textContent = v.length === 0 ? 'Use 8+ caracteres, letras e números' : (lbls[score] || 'Fraca');
+  }
+
+  function enterDashboard(nome) {
+    document.getElementById('view-auth').style.display = 'none';
+    document.getElementById('view-dashboard').style.display = 'block';
+    const first = nome.split(' ')[0];
+    document.getElementById('dash-name').textContent = first;
+    const initials = nome.split(' ').map(w => w[0].toUpperCase()).slice(0, 2).join('');
+    document.getElementById('dash-avatar').textContent = initials;
+  }
+
+  async function doRegister() {
+    const nome = (document.getElementById('r-nome').value + ' ' + document.getElementById('r-sobre').value).trim();
+    const email = document.getElementById('r-email').value.trim();
+    const pass = document.getElementById('r-pass').value;
+    const terms = document.getElementById('terms').checked;
+    const err = document.getElementById('r-err');
+    if (!nome || nome.length < 2) { err.textContent = 'Informe seu nome.'; err.style.display = 'block'; return; }
+    if (!email || !email.includes('@')) { err.textContent = 'Informe um e-mail válido.'; err.style.display = 'block'; return; }
+    if (pass.length < 6) { err.textContent = 'A senha deve ter pelo menos 6 caracteres.'; err.style.display = 'block'; return; }
+    if (!terms) { err.textContent = 'Aceite os termos para continuar.'; err.style.display = 'block'; return; }
+    err.style.display = 'none';
+
+    try {
+      const data = await apiFetch('/cadastro', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email, senha: pass }),
+      });
+      enterDashboard(data.nome);
+    } catch (e) {
+      err.textContent = e.message;
+      err.style.display = 'block';
+    }
+  }
+
+  async function doLogin() {
+    const email = document.getElementById('l-email').value.trim();
+    const pass = document.getElementById('l-pass').value;
+    const err = document.getElementById('l-err');
+
+    try {
+      const data = await apiFetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, senha: pass }),
+      });
+      err.style.display = 'none';
+      enterDashboard(data.nome);
+    } catch (e) {
+      err.textContent = e.message || 'E-mail ou senha incorretos.';
+      err.style.display = 'block';
+    }
+  }
+
+  function doSocialLogin(provider) {
+    // Login social (Google/GitHub) é só visual por enquanto — não há
+    // integração real com esses provedores.
+    alert('Login com ' + provider + ' ainda não está disponível.');
+  }
+
+  async function doLogout() {
+    try { await apiFetch('/logout', { method: 'POST' }); } catch (e) {}
+    document.getElementById('view-dashboard').style.display = 'none';
+    document.getElementById('view-auth').style.display = 'block';
+    showTab('login');
+    document.getElementById('l-email').value = '';
+    document.getElementById('l-pass').value = '';
+  }
+
+  document.querySelectorAll('.gh-btn').forEach(btn => {
+    btn.addEventListener('mouseenter', () => {
+      const p = btn.querySelector('.gh-icon path');
+      if (p) p.setAttribute('fill', '#D4AF37');
+    });
+    btn.addEventListener('mouseleave', () => {
+      const p = btn.querySelector('.gh-icon path');
+      if (p) p.setAttribute('fill', '#f5f0e0');
+    });
+  });
+
+  // Ao abrir a página, verifica se já existe uma sessão ativa (cookie
+  // válido) e, se sim, vai direto para o dashboard em vez de mostrar
+  // a tela de login novamente.
+  (async function checarSessao() {
+    try {
+      const data = await apiFetch('/me');
+      if (data.logado) enterDashboard(data.nome);
+    } catch (e) {
+      // sem sessão ativa: mantém a tela de login normalmente
+    }
+  })();
+</script>
+</body>
+</html>

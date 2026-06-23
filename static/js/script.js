@@ -45,10 +45,14 @@ document.querySelectorAll('.btn-comprar').forEach(btn => {
         this.classList.add('comprado');
         this.textContent = '✅ Comprado!';
 
-        // Registra a compra no backend (rota /api/compras)
+        // Registra a compra no backend (rota /api/compras).
+        // Se o cliente estiver logado (sessão ativa em /cadastro), o
+        // backend usa o nome/email reais da conta automaticamente —
+        // os valores abaixo só são usados quando não há login.
         try {
             await fetch(API_BASE + '/compras', {
                 method: 'POST',
+                credentials: 'include',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     cliente_nome: 'Cliente Site',

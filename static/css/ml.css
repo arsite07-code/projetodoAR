@@ -1,0 +1,243 @@
+/* =============================== */
+/* IA MACHINE LEARNING - LOJA A/R */
+/* =============================== */
+
+.ar-ai-chat{
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    z-index: 9999;
+    font-family: "Poppins", sans-serif;
+}
+
+/* BOTÃO FLUTUANTE */
+.ar-ai-button{
+    width: 68px;
+    height: 68px;
+    border-radius: 50%;
+    border: 2px solid #D4AF37;
+    background: #000;
+    color: #D4AF37;
+    font-size: 20px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.4s ease;
+
+    box-shadow:
+        0 0 10px rgba(212, 175, 55, 0.4),
+        0 0 25px rgba(212, 175, 55, 0.2);
+}
+
+.ar-ai-button:hover{
+    color: #FFD86B;
+    border-color: #FFD86B;
+    transform: scale(1.08);
+
+    text-shadow:
+        0 0 5px #D4AF37,
+        0 0 10px #D4AF37,
+        0 0 20px #D4AF37;
+
+    box-shadow:
+        0 0 10px rgba(212, 175, 55, 0.6),
+        0 0 25px rgba(212, 175, 55, 0.4),
+        0 0 45px rgba(212, 175, 55, 0.3);
+}
+
+/* CAIXA DO CHAT */
+.ar-ai-box{
+    display: none;
+    width: 360px;
+    height: 520px;
+    background: #000;
+    border: 1px solid rgba(212, 175, 55, 0.5);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 15px;
+
+    box-shadow:
+        0 0 15px rgba(212, 175, 55, 0.3),
+        0 0 40px rgba(0, 0, 0, 0.9);
+}
+
+/* CABEÇALHO */
+.ar-ai-header{
+    background: #111;
+    border-bottom: 1px solid rgba(212, 175, 55, 0.3);
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.ar-ai-header h3{
+    color: #D4AF37;
+    font-size: 20px;
+    margin-bottom: 3px;
+}
+
+.ar-ai-header span{
+    color: #aaa;
+    font-size: 13px;
+}
+
+.ar-ai-header button{
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: none;
+    background: #D4AF37;
+    color: #000;
+    font-size: 22px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.ar-ai-header button:hover{
+    background: #FFD86B;
+    transform: scale(1.08);
+    box-shadow: 0 0 15px #D4AF37;
+}
+
+/* ÁREA DE MENSAGENS */
+.ar-ai-messages{
+    height: 310px;
+    padding: 15px;
+    overflow-y: auto;
+    background: #000;
+}
+
+/* BARRA DE ROLAGEM */
+.ar-ai-messages::-webkit-scrollbar{
+    width: 6px;
+}
+
+.ar-ai-messages::-webkit-scrollbar-thumb{
+    background: #D4AF37;
+    border-radius: 20px;
+}
+
+/* MENSAGENS */
+.ar-msg{
+    max-width: 85%;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border-radius: 15px;
+    font-size: 14px;
+    line-height: 23px;
+    animation: aparecerMsg 0.3s ease;
+}
+
+@keyframes aparecerMsg{
+    from{
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to{
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ar-bot{
+    background: #111;
+    color: #fff;
+    border: 1px solid rgba(212, 175, 55, 0.2);
+    border-left: 4px solid #D4AF37;
+}
+
+.ar-user{
+    background: #D4AF37;
+    color: #000;
+    margin-left: auto;
+    font-weight: 500;
+}
+
+/* BOTÕES DE SUGESTÃO */
+.ar-ai-sugestoes{
+    padding: 10px;
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    background: #050505;
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.ar-ai-sugestoes button{
+    white-space: nowrap;
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 1px solid rgba(212, 175, 55, 0.4);
+    background: transparent;
+    color: #D4AF37;
+    font-size: 12px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.ar-ai-sugestoes button:hover{
+    background: #D4AF37;
+    color: #000;
+}
+
+/* INPUT */
+.ar-ai-input-area{
+    height: 65px;
+    display: flex;
+    border-top: 1px solid rgba(212, 175, 55, 0.3);
+    background: #111;
+}
+
+.ar-ai-input-area input{
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 0 15px;
+    background: #111;
+    color: #fff;
+    font-size: 14px;
+}
+
+.ar-ai-input-area input::placeholder{
+    color: #777;
+}
+
+.ar-ai-input-area button{
+    width: 95px;
+    border: none;
+    background: #D4AF37;
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.ar-ai-input-area button:hover{
+    background: #FFD86B;
+    box-shadow: 0 0 15px #D4AF37;
+}
+
+/* RESPONSIVO */
+@media (max-width: 768px){
+
+    .ar-ai-chat{
+        right: 15px;
+        bottom: 15px;
+    }
+
+    .ar-ai-box{
+        width: 92vw;
+        height: 500px;
+    }
+
+    .ar-ai-messages{
+        height: 295px;
+    }
+
+    .ar-ai-button{
+        width: 62px;
+        height: 62px;
+        font-size: 18px;
+    }
+}

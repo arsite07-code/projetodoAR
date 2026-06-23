@@ -1,37 +1,68 @@
 /* ============================================================
    adm.js — Painel ADM conectado ao servidor Flask
-   Lê e salva tudo no banco de dados real (loja.db)
+   Lê e salva tudo no banco de dados real (banco.db)
    ============================================================ */
 
 const API = '/api'; // mesmo domínio do backend Flask
 
 /* ── ESTADO ── */
-let ADM_PASS   = localStorage.getItem('adm_senha') || '1234';
 let editandoId = null;
 
 /* ============================================================
    LOGIN / LOGOUT
+   O login agora é validado de verdade no backend (senha com hash
+   no banco), não mais comparado com um valor fixo guardado no JS.
    ============================================================ */
-function fazerLogin() {
+async function fazerLogin() {
   const usuario = document.getElementById('user-in').value.trim();
   const senha   = document.getElementById('pass-in').value;
   const errEl   = document.getElementById('login-err');
 
-  if (usuario === 'admin' && senha === ADM_PASS) {
+  try {
+    const res  = await fetch(API + '/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ usuario, senha }),
+    });
+    const json = await res.json();
+    if (!res.ok) {
+      errEl.textContent = json.erro || 'Usuário ou senha incorretos.';
+      return;
+    }
+    errEl.textContent = '';
     document.getElementById('login-screen').style.display = 'none';
     document.getElementById('adm-panel').style.display    = 'block';
-    inicializar();
-  } else {
-    errEl.textContent = 'Usuário ou senha incorretos.';
+    inicializar(json.nome_loja);
+  } catch (err) {
+    errEl.textContent = 'Não foi possível conectar ao servidor.';
+    console.error(err);
   }
 }
 
-function sair() {
+async function sair() {
+  try {
+    await fetch(API + '/admin/logout', { method: 'POST', credentials: 'include' });
+  } catch (err) { /* mesmo se falhar, limpa a tela local */ }
   document.getElementById('login-screen').style.display = 'flex';
   document.getElementById('adm-panel').style.display    = 'none';
   document.getElementById('user-in').value              = '';
-  document.getElementById('pass-in').value              = '';
-  document.getElementById('login-err').textContent      = '';
+  document.getElementById('pass-in').value               = '';
+  document.getElementById('login-err').textContent       = '';
+}
+
+// Se já existir uma sessão de admin ativa (cookie válido), pula a tela
+// de login direto para o painel, em vez de pedir login de novo.
+async function checarSessaoAdmin() {
+  try {
+    const res  = await fetch(API + '/admin/me', { credentials: 'include' });
+    const json = await res.json();
+    if (json.logado) {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('adm-panel').style.display    = 'block';
+      inicializar(json.nome_loja);
+    }
+  } catch (err) { /* sem sessão: mantém a tela de login */ }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,6 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (passInput) passInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') fazerLogin();
   });
+  checarSessaoAdmin();
 });
 
 /* ============================================================
@@ -73,9 +105,18 @@ function toast(msg, tipo = 'ok') {
    ============================================================ */
 async function apiFetch(url, opcoes = {}) {
   try {
-    const res  = await fetch(API + url, opcoes);
+    const res  = await fetch(API + url, { credentials: 'include', ...opcoes });
     const json = await res.json();
-    if (!res.ok) throw new Error(json.erro || 'Erro na requisição');
+    if (!res.ok) {
+      // Se a sessão de admin expirou ou nunca existiu, manda de volta
+      // para a tela de login em vez de só mostrar um erro genérico.
+      if (res.status === 401) {
+        toast('Sessão expirada. Faça login novamente.', 'erro');
+        sair();
+        return null;
+      }
+      throw new Error(json.erro || 'Erro na requisição');
+    }
     return json;
   } catch (err) {
     toast('Erro: ' + err.message, 'erro');
@@ -116,8 +157,20 @@ async function renderDashboard() {
         <div class="stat-value">${data.total_compras}</div>
       </div>
       <div class="stat-card">
+        <div class="stat-label">Camisas Vendidas</div>
+        <div class="stat-value">${data.total_itens_comprados}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pessoas que Compraram</div>
+        <div class="stat-value">${data.total_clientes}</div>
+      </div>
+      <div class="stat-card">
         <div class="stat-label">Receita Total</div>
         <div class="stat-value">R$ ${data.receita_total.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Usuários Cadastrados</div>
+        <div class="stat-value">${data.total_usuarios}</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Candidatos</div>
@@ -438,35 +491,43 @@ async function exportarCSV() {
 /* ============================================================
    CONFIGURAÇÕES
    ============================================================ */
-function salvarConfig() {
+async function salvarConfig() {
   const nome   = document.getElementById('cfg-nome').value.trim();
   const senha  = document.getElementById('cfg-senha').value;
   const senha2 = document.getElementById('cfg-senha2')?.value;
 
   if (senha && senha !== senha2) { toast('As senhas não coincidem.', 'erro'); return; }
+  if (senha && senha.length < 4) { toast('A nova senha deve ter pelo menos 4 caracteres.', 'erro'); return; }
 
-  if (senha) {
-    ADM_PASS = senha;
-    localStorage.setItem('adm_senha', senha);
-  }
+  const body = {};
+  if (nome)  body.nome_loja   = nome;
+  if (senha) body.nova_senha  = senha;
+
+  const data = await apiFetch('/admin/config', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!data) return;
+
   if (nome) {
-    localStorage.setItem('adm_nome_loja', nome);
     const el = document.getElementById('nome-loja');
     if (el) el.textContent = nome;
   }
+  document.getElementById('cfg-senha').value  = '';
+  document.getElementById('cfg-senha2').value = '';
   toast('Configurações salvas!');
 }
 
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
-function inicializar() {
-  const nomeSalvo = localStorage.getItem('adm_nome_loja');
-  if (nomeSalvo) {
+function inicializar(nomeLoja) {
+  if (nomeLoja) {
     const el  = document.getElementById('nome-loja');
     const cfg = document.getElementById('cfg-nome');
-    if (el)  el.textContent = nomeSalvo;
-    if (cfg) cfg.value      = nomeSalvo;
+    if (el)  el.textContent = nomeLoja;
+    if (cfg) cfg.value      = nomeLoja;
   }
   renderDashboard();
 }
