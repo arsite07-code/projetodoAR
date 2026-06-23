@@ -5,14 +5,18 @@ Responsabilidades:
   - Servir o frontend (templates HTML + arquivos estáticos: css/js/img).
   - Expor a API REST em /api/* usada pelo site e pelo painel admin.
   - Persistir os dados em SQLite (arquivo banco.db).
+<<<<<<< HEAD
   - Autenticar usuários do site e o administrador, com senha hasheada
     (nunca em texto puro) e sessão de servidor (cookie assinado pelo Flask).
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
 Rotas de página:
   GET /            -> index.html
   GET /sobre       -> sobre.html
   GET /loja        -> loja.html
   GET /admin       -> admin.html (painel administrativo)
+<<<<<<< HEAD
   GET /login       -> redireciona para /cadastro (a mesma página faz login e cadastro)
   GET /cadastro    -> cadastro.html (login + cadastro, com abas)
 
@@ -41,6 +45,23 @@ Rotas de API (dados, painel admin):
   POST   /api/candidatos
 
   GET    /api/dashboard           (requer admin)
+=======
+
+Rotas de API:
+  GET    /api/produtos
+  POST   /api/produtos
+  PUT    /api/produtos/<id>
+  DELETE /api/produtos/<id>
+
+  GET    /api/compras
+  POST   /api/compras
+  PUT    /api/compras/<id>/status
+
+  GET    /api/candidatos
+  POST   /api/candidatos
+
+  GET    /api/dashboard
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 """
 
 from __future__ import annotations
@@ -48,11 +69,17 @@ from __future__ import annotations
 import os
 import sqlite3
 from datetime import datetime
+<<<<<<< HEAD
 from functools import wraps
 
 from flask import Flask, jsonify, request, render_template, session, redirect
 from flask_cors import CORS
 from werkzeug.security import generate_password_hash, check_password_hash
+=======
+
+from flask import Flask, jsonify, request, render_template
+from flask_cors import CORS
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -62,6 +89,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 DB_DIR = os.environ.get("DB_DIR", BASE_DIR)
 DB_PATH = os.path.join(DB_DIR, "banco.db")
 
+<<<<<<< HEAD
 # Senha padrão do admin, usada apenas para criar o registro inicial no banco
 # na primeira execução (quando a tabela "admins" ainda está vazia). Depois
 # disso, a senha real é a que está hasheada no banco — para trocá-la, use a
@@ -70,6 +98,8 @@ DB_PATH = os.path.join(DB_DIR, "banco.db")
 ADMIN_USUARIO_PADRAO = os.environ.get("ADMIN_USUARIO", "admin")
 ADMIN_SENHA_PADRAO = os.environ.get("ADMIN_SENHA_INICIAL", "1234")
 
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
 def get_conn() -> sqlite3.Connection:
     con = sqlite3.connect(DB_PATH)
@@ -107,8 +137,12 @@ def init_db() -> None:
                 quantidade INTEGER NOT NULL DEFAULT 1,
                 total REAL NOT NULL,
                 status TEXT NOT NULL DEFAULT 'pendente',
+<<<<<<< HEAD
                 criado_em TEXT NOT NULL,
                 usuario_id INTEGER
+=======
+                criado_em TEXT NOT NULL
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
             )
             """
         )
@@ -125,6 +159,7 @@ def init_db() -> None:
             """
         )
 
+<<<<<<< HEAD
         cur.execute(
             """
             CREATE TABLE IF NOT EXISTS usuarios (
@@ -166,6 +201,8 @@ def init_db() -> None:
                 ),
             )
 
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         con.commit()
 
 
@@ -173,6 +210,7 @@ def agora() -> str:
     return datetime.now().strftime("%d/%m/%Y %H:%M")
 
 
+<<<<<<< HEAD
 def admin_logado() -> bool:
     return bool(session.get("admin_id"))
 
@@ -200,6 +238,11 @@ def criar_app() -> Flask:
     # Em produção, defina a variável de ambiente SECRET_KEY com um valor
     # aleatório fixo (senão, a cada reinício/deploy todo mundo é deslogado).
     app.secret_key = os.environ.get("SECRET_KEY", "troque-essa-chave-em-producao-ar-loja")
+=======
+def criar_app() -> Flask:
+    app = Flask(__name__)
+    CORS(app)  # permite chamadas do frontend via fetch, inclusive de outro domínio
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
     init_db()
 
@@ -222,6 +265,7 @@ def criar_app() -> Flask:
     def admin():
         return render_template("admin.html")
 
+<<<<<<< HEAD
     @app.get("/login")
     def login_page():
         # A própria cadastro.html já tem aba de login, então não duplicamos
@@ -240,12 +284,15 @@ def criar_app() -> Flask:
     def blog_page():
         return render_template("blogs.html")
 
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     @app.get("/status")
     def status():
         # Endpoint simples de health-check (ex: Railway healthcheck)
         return jsonify({"status": "ok", "app": "A/R backend"})
 
     # ------------------------------------------------------------------
+<<<<<<< HEAD
     # AUTENTICAÇÃO (login/cadastro do site)
     # ------------------------------------------------------------------
     @app.post("/api/cadastro")
@@ -402,6 +449,10 @@ def criar_app() -> Flask:
     # PRODUTOS
     # ------------------------------------------------------------------
 
+=======
+    # PRODUTOS
+    # ------------------------------------------------------------------
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     @app.get("/api/produtos")
     def listar_produtos():
         with get_conn() as con:
@@ -411,7 +462,10 @@ def criar_app() -> Flask:
         return jsonify([dict(r) for r in rows])
 
     @app.post("/api/produtos")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def criar_produto():
         d = request.get_json(silent=True) or {}
         nome = (d.get("nome") or "").strip()
@@ -439,7 +493,10 @@ def criar_app() -> Flask:
         return jsonify({"ok": True, "id": novo_id}), 201
 
     @app.put("/api/produtos/<int:produto_id>")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def atualizar_produto(produto_id: int):
         d = request.get_json(silent=True) or {}
         with get_conn() as con:
@@ -470,7 +527,10 @@ def criar_app() -> Flask:
         return jsonify({"ok": True})
 
     @app.delete("/api/produtos/<int:produto_id>")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def deletar_produto(produto_id: int):
         with get_conn() as con:
             cur = con.execute("DELETE FROM produtos WHERE id = ?", (produto_id,))
@@ -482,7 +542,10 @@ def criar_app() -> Flask:
     # COMPRAS
     # ------------------------------------------------------------------
     @app.get("/api/compras")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def listar_compras():
         with get_conn() as con:
             rows = con.execute(
@@ -493,6 +556,7 @@ def criar_app() -> Flask:
     @app.post("/api/compras")
     def criar_compra():
         d = request.get_json(silent=True) or {}
+<<<<<<< HEAD
 
         usuario_id = session.get("usuario_id")
 
@@ -507,6 +571,13 @@ def criar_app() -> Flask:
             cliente_email = (d.get("cliente_email") or "").strip()
 
         produto_nome = (d.get("produto_nome") or d.get("produto") or "").strip()
+=======
+        cliente_nome = (d.get("cliente_nome") or d.get("nome") or "").strip()
+        produto_nome = (d.get("produto_nome") or d.get("produto") or "").strip()
+
+        if not cliente_nome:
+            return jsonify({"erro": "campo 'cliente_nome' é obrigatório"}), 400
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         if not produto_nome:
             return jsonify({"erro": "campo 'produto_nome' é obrigatório"}), 400
 
@@ -515,22 +586,36 @@ def criar_app() -> Flask:
         except (TypeError, ValueError):
             return jsonify({"erro": "campo 'total' deve ser numérico"}), 400
 
+<<<<<<< HEAD
+=======
+        cliente_email = (d.get("cliente_email") or "").strip()
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         quantidade = int(d.get("quantidade") or 1)
 
         with get_conn() as con:
             cur = con.execute(
                 """
                 INSERT INTO compras
+<<<<<<< HEAD
                     (cliente_nome, cliente_email, produto_nome, quantidade, total, status, criado_em, usuario_id)
                 VALUES (?, ?, ?, ?, ?, 'pendente', ?, ?)
                 """,
                 (cliente_nome, cliente_email, produto_nome, quantidade, total, agora(), usuario_id),
+=======
+                    (cliente_nome, cliente_email, produto_nome, quantidade, total, status, criado_em)
+                VALUES (?, ?, ?, ?, ?, 'pendente', ?)
+                """,
+                (cliente_nome, cliente_email, produto_nome, quantidade, total, agora()),
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
             )
             novo_id = cur.lastrowid
         return jsonify({"ok": True, "id": novo_id}), 201
 
     @app.put("/api/compras/<int:compra_id>/status")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def atualizar_status_compra(compra_id: int):
         d = request.get_json(silent=True) or {}
         status_novo = (d.get("status") or "").strip()
@@ -549,7 +634,10 @@ def criar_app() -> Flask:
     # CANDIDATOS
     # ------------------------------------------------------------------
     @app.get("/api/candidatos")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def listar_candidatos():
         with get_conn() as con:
             rows = con.execute(
@@ -584,13 +672,19 @@ def criar_app() -> Flask:
     # DASHBOARD
     # ------------------------------------------------------------------
     @app.get("/api/dashboard")
+<<<<<<< HEAD
     @login_admin_obrigatorio
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     def dashboard():
         with get_conn() as con:
             produtos = con.execute("SELECT * FROM produtos").fetchall()
             compras = con.execute("SELECT * FROM compras").fetchall()
             candidatos = con.execute("SELECT * FROM candidatos").fetchall()
+<<<<<<< HEAD
             total_usuarios = con.execute("SELECT COUNT(*) AS c FROM usuarios").fetchone()["c"]
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 
         total_produtos = len(produtos)
         total_estoque = sum(int(p["estoque"]) for p in produtos)
@@ -602,6 +696,7 @@ def criar_app() -> Flask:
         ]
 
         total_compras = len(compras)
+<<<<<<< HEAD
 
         # Quantas pessoas diferentes já compraram (clientes únicos, pelo
         # email quando existe; senão pelo nome) — métrica pedida para o
@@ -618,6 +713,8 @@ def criar_app() -> Flask:
         # que foram compradas").
         total_itens_comprados = sum(int(c["quantidade"]) for c in compras)
 
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         receita_total = sum(
             float(c["total"]) for c in compras if c["status"] == "pago"
         )
@@ -631,11 +728,16 @@ def criar_app() -> Flask:
                 "valor_estoque": valor_estoque,
                 "estoque_baixo": estoque_baixo,
                 "total_compras": total_compras,
+<<<<<<< HEAD
                 "total_itens_comprados": total_itens_comprados,
                 "total_clientes": total_clientes,
                 "receita_total": receita_total,
                 "total_candidatos": total_candidatos,
                 "total_usuarios": total_usuarios,
+=======
+                "receita_total": receita_total,
+                "total_candidatos": total_candidatos,
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
             }
         )
 

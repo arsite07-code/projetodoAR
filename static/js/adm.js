@@ -1,23 +1,37 @@
 /* ============================================================
    adm.js — Painel ADM conectado ao servidor Flask
+<<<<<<< HEAD
    Lê e salva tudo no banco de dados real (banco.db)
+=======
+   Lê e salva tudo no banco de dados real (loja.db)
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
    ============================================================ */
 
 const API = '/api'; // mesmo domínio do backend Flask
 
 /* ── ESTADO ── */
+<<<<<<< HEAD
+=======
+let ADM_PASS   = localStorage.getItem('adm_senha') || '1234';
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 let editandoId = null;
 
 /* ============================================================
    LOGIN / LOGOUT
+<<<<<<< HEAD
    O login agora é validado de verdade no backend (senha com hash
    no banco), não mais comparado com um valor fixo guardado no JS.
    ============================================================ */
 async function fazerLogin() {
+=======
+   ============================================================ */
+function fazerLogin() {
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
   const usuario = document.getElementById('user-in').value.trim();
   const senha   = document.getElementById('pass-in').value;
   const errEl   = document.getElementById('login-err');
 
+<<<<<<< HEAD
   try {
     const res  = await fetch(API + '/admin/login', {
       method: 'POST',
@@ -63,6 +77,23 @@ async function checarSessaoAdmin() {
       inicializar(json.nome_loja);
     }
   } catch (err) { /* sem sessão: mantém a tela de login */ }
+=======
+  if (usuario === 'admin' && senha === ADM_PASS) {
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('adm-panel').style.display    = 'block';
+    inicializar();
+  } else {
+    errEl.textContent = 'Usuário ou senha incorretos.';
+  }
+}
+
+function sair() {
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('adm-panel').style.display    = 'none';
+  document.getElementById('user-in').value              = '';
+  document.getElementById('pass-in').value              = '';
+  document.getElementById('login-err').textContent      = '';
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -70,7 +101,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (passInput) passInput.addEventListener('keydown', e => {
     if (e.key === 'Enter') fazerLogin();
   });
+<<<<<<< HEAD
   checarSessaoAdmin();
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
 });
 
 /* ============================================================
@@ -105,6 +139,7 @@ function toast(msg, tipo = 'ok') {
    ============================================================ */
 async function apiFetch(url, opcoes = {}) {
   try {
+<<<<<<< HEAD
     const res  = await fetch(API + url, { credentials: 'include', ...opcoes });
     const json = await res.json();
     if (!res.ok) {
@@ -117,6 +152,11 @@ async function apiFetch(url, opcoes = {}) {
       }
       throw new Error(json.erro || 'Erro na requisição');
     }
+=======
+    const res  = await fetch(API + url, opcoes);
+    const json = await res.json();
+    if (!res.ok) throw new Error(json.erro || 'Erro na requisição');
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
     return json;
   } catch (err) {
     toast('Erro: ' + err.message, 'erro');
@@ -157,6 +197,7 @@ async function renderDashboard() {
         <div class="stat-value">${data.total_compras}</div>
       </div>
       <div class="stat-card">
+<<<<<<< HEAD
         <div class="stat-label">Camisas Vendidas</div>
         <div class="stat-value">${data.total_itens_comprados}</div>
       </div>
@@ -165,14 +206,19 @@ async function renderDashboard() {
         <div class="stat-value">${data.total_clientes}</div>
       </div>
       <div class="stat-card">
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         <div class="stat-label">Receita Total</div>
         <div class="stat-value">R$ ${data.receita_total.toLocaleString('pt-BR', { maximumFractionDigits: 0 })}</div>
       </div>
       <div class="stat-card">
+<<<<<<< HEAD
         <div class="stat-label">Usuários Cadastrados</div>
         <div class="stat-value">${data.total_usuarios}</div>
       </div>
       <div class="stat-card">
+=======
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
         <div class="stat-label">Candidatos</div>
         <div class="stat-value">${data.total_candidatos}</div>
       </div>
@@ -491,12 +537,17 @@ async function exportarCSV() {
 /* ============================================================
    CONFIGURAÇÕES
    ============================================================ */
+<<<<<<< HEAD
 async function salvarConfig() {
+=======
+function salvarConfig() {
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
   const nome   = document.getElementById('cfg-nome').value.trim();
   const senha  = document.getElementById('cfg-senha').value;
   const senha2 = document.getElementById('cfg-senha2')?.value;
 
   if (senha && senha !== senha2) { toast('As senhas não coincidem.', 'erro'); return; }
+<<<<<<< HEAD
   if (senha && senha.length < 4) { toast('A nova senha deve ter pelo menos 4 caracteres.', 'erro'); return; }
 
   const body = {};
@@ -516,18 +567,40 @@ async function salvarConfig() {
   }
   document.getElementById('cfg-senha').value  = '';
   document.getElementById('cfg-senha2').value = '';
+=======
+
+  if (senha) {
+    ADM_PASS = senha;
+    localStorage.setItem('adm_senha', senha);
+  }
+  if (nome) {
+    localStorage.setItem('adm_nome_loja', nome);
+    const el = document.getElementById('nome-loja');
+    if (el) el.textContent = nome;
+  }
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
   toast('Configurações salvas!');
 }
 
 /* ============================================================
    INICIALIZAÇÃO
    ============================================================ */
+<<<<<<< HEAD
 function inicializar(nomeLoja) {
   if (nomeLoja) {
     const el  = document.getElementById('nome-loja');
     const cfg = document.getElementById('cfg-nome');
     if (el)  el.textContent = nomeLoja;
     if (cfg) cfg.value      = nomeLoja;
+=======
+function inicializar() {
+  const nomeSalvo = localStorage.getItem('adm_nome_loja');
+  if (nomeSalvo) {
+    const el  = document.getElementById('nome-loja');
+    const cfg = document.getElementById('cfg-nome');
+    if (el)  el.textContent = nomeSalvo;
+    if (cfg) cfg.value      = nomeSalvo;
+>>>>>>> 56f37798f742afa3fe8568c0af69938722492a6e
   }
   renderDashboard();
 }
